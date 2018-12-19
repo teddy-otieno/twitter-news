@@ -10,6 +10,7 @@ FOLLOW = [
         "115141256",
         "25985333",
             ]
+
 class Listener(tweepy.StreamListener):
     def on_data(self, data):
         #jprint(data)
@@ -38,9 +39,7 @@ def output(message):
 def parse(json_string):
     tweet = json.loads(json_string)
 
-    print(tweet)
     if 'RT @' not in tweet['text'] and tweet['user']['id'] in FOLLOW:
-        print(message)
         message = Message(tweet['user']['name'], tweet['text'])
     else:
         message = Message(out=False) 
