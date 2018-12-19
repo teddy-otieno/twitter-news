@@ -1,23 +1,50 @@
 import tweepy
-
+import subprocess
+import json
 from credentials import *
+
+FOLLOW = [  
+        "70394965",
+        "11348282",
+        "53037279",
+        "115141256",
+        "25985333",
+            ]
 class Listener(tweepy.StreamListener):
     def on_data(self, data):
-        print(data)
+        #jprint(data)
+        output(parse(data))
         return True
 
     def on_error(self, error):
-        print(error)
         return False
 
-def output(tweet):
+class Message:
+    def __init__(self, title=None, body=None, out=True):
+        self.title = title
+        self.body = body
+        self.out = out
+
+    def __str__(self):
+        return "{} {}".format(self.title, self.body)
+
+def output(message):
     #output
     #twitter_name: text
     #try find how to load the image
-    pass
+    if message.out == True:
+        subprocess.run(['notify-send', '--urgency=normal', message.title, message.body])
 
 def parse(json_string):
-    pass
+    tweet = json.loads(json_string)
+
+    print(tweet)
+    if 'RT @' not in tweet['text'] and tweet['user']['id'] in FOLLOW:
+        print(message)
+        message = Message(tweet['user']['name'], tweet['text'])
+    else:
+        message = Message(out=False) 
+    return message
 
 def main():
     auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
@@ -26,9 +53,8 @@ def main():
     api = tweepy.API(auth)
     stream = tweepy.Stream(auth = api.auth, listener=Listener())
 
-    #follow citizen_tv, nasa, iss, 
     print("streaming")
-    stream.filter(follow=["70394965", "11348282"])
+    stream.filter(follow=FOLLOW)
 
 if __name__ == '__main__':
     main()
