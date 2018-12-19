@@ -3,12 +3,15 @@ import subprocess
 import json
 from credentials import *
 
+#Add userIDs of the accounts you want to get news from
 FOLLOW = [  
         "70394965",
         "11348282",
         "53037279",
         "115141256",
         "25985333",
+        "34743251",
+
             ]
 
 class Listener(tweepy.StreamListener):
@@ -38,8 +41,8 @@ def output(message):
 
 def parse(json_string):
     tweet = json.loads(json_string)
-
-    if 'RT @' not in tweet['text'] and tweet['user']['id'] in FOLLOW:
+    
+    if 'RT @' not in tweet['text'] and tweet['user']['id_str'] in FOLLOW:
         message = Message(tweet['user']['name'], tweet['text'])
     else:
         message = Message(out=False) 
