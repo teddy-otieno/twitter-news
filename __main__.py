@@ -55,6 +55,8 @@ def parse(json_string):
         message = Message(out=False) 
     return message
 
+#update it when its fully working
+"""
 def server():
     print("Server started")
     host = 'localhost'
@@ -68,7 +70,7 @@ def server():
         FOLLOW.append(str(conn.recv(1024), 'utf-8'))
         conn.send(b"Data received")
         conn.close()
-
+"""
 def main():
     auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
     auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
@@ -80,11 +82,11 @@ def main():
     stream.filter(follow=FOLLOW)
 
 if __name__ == '__main__':
-    server_thread = threading.Thread(target=server)
-    try:
-        main()
-    except e:
-        server_thread.join()
-        print("Exeception {} occured, server stopped".format(e))
-        sys.exit()
+    #server_thread = threading.Thread(target=server)
+    #try:
+    main()
+    #except e:
+    #    server_thread.join()
+     #   print("Exeception {} occured, server stopped".format(e))
+     #   sys.exit()
 
