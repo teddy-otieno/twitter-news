@@ -1,18 +1,25 @@
 import tweepy
 import subprocess
 import json
+import socket
+import threading
+import sys
 from credentials import *
 
+#TODO: Filters
+#FEATURE: server client protocol, to add and remove user id's in real time
 #Add userIDs of the accounts you want to get news from
-FOLLOW = [  
-        "70394965",
-        "11348282",
-        "53037279",
-        "115141256",
-        "25985333",
-        "34743251",
+FOLLOW = [
+        "56510427", #motherboard
+        "333430027", #manjarolinux
+        "50052513", #freebsd
+        "300789811",
+        "742143",
+        "14706299",
+        "2097571",
 
-            ]
+
+        ]
 
 class Listener(tweepy.StreamListener):
     def on_data(self, data):
@@ -48,6 +55,20 @@ def parse(json_string):
         message = Message(out=False) 
     return message
 
+def server():
+    print("Server started")
+    host = 'localhost'
+    port ='9090'
+
+    connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    connection.bind((host, port))
+    while True:
+        con, address = connection.accept()
+        print("Connection received")
+        FOLLOW.append(str(conn.recv(1024), 'utf-8'))
+        conn.send(b"Data received")
+        conn.close()
+
 def main():
     auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
     auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
@@ -59,4 +80,11 @@ def main():
     stream.filter(follow=FOLLOW)
 
 if __name__ == '__main__':
-    main()
+    server_thread = threading.Thread(target=server)
+    try:
+        main()
+    except e:
+        server_thread.join()
+        print("Exeception {} occured, server stopped".format(e))
+        sys.exit()
+
