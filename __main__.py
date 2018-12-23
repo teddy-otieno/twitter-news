@@ -53,7 +53,25 @@ def parse(json_string):
         message = Message(out=False) 
     return message
 
-#update it when its fully working
+def save_to_filesystem(user_id):
+    file_location = "/home/teddy/Projects/Python/twitter-news/user_ids_store"
+
+    temporary_user_ids = []
+
+    with open(file_location, 'r') as File:
+        file_output = File.read()
+        for user_id in file_output.split('\n'):
+            temporary_user_ids.append(user_id)
+
+    if user_id not in temporary_user_ids:
+        with open(file_location, 'a') as File:
+            File.write(user_id + "\n")
+
+        return False
+
+    else:
+        return True
+
 def server():
     print("Server started")
     host = 'localhost'
@@ -67,9 +85,13 @@ def server():
     while True:
         conn, address = connection.accept()
         print("Connection received")
-        FOLLOW.append(str(conn.recv(1024), 'utf-8'))
-        print(FOLLOW)
-        conn.send(b"Data received")
+
+        user_id = str(conn.recv(1024), 'utf-8')
+        if user_id not in FOLLOW and save_to_filesystem(user_id):
+            FOLLOW.append(user_id)
+            conn.send(b"User ID updated succesfully")
+        else:
+            conn.send(b"User ID already present, update failed")
         conn.close()
 
 def main():

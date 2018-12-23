@@ -7,7 +7,6 @@ def main():
     #TODO: Add error checking later, feature to remove, but i fell lazy today.
     for user in list_of_users:
         send_to_script(user)
-    print("Updated")
 
 def send_to_script(user):
     host = 'localhost'
