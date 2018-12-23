@@ -11,9 +11,13 @@ def main():
 
 def send_to_script(user):
     host = 'localhost'
-    port = '9090'
+    port = 9090
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((host, port))
     s.send(user.encode('utf-8'))
     print("{}".format(str(s.recv(1024), 'utf-8')))
+
+
+if __name__ == '__main__':
+    main()

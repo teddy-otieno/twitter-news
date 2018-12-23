@@ -17,8 +17,6 @@ FOLLOW = [
         "742143",
         "14706299",
         "2097571",
-
-
         ]
 
 class Listener(tweepy.StreamListener):
@@ -56,22 +54,26 @@ def parse(json_string):
     return message
 
 #update it when its fully working
-"""
 def server():
     print("Server started")
     host = 'localhost'
-    port ='9090'
-
+    port = 9090
+    
+    #change to unix-sockets
     connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     connection.bind((host, port))
+
+    connection.listen(10)
     while True:
-        con, address = connection.accept()
+        conn, address = connection.accept()
         print("Connection received")
         FOLLOW.append(str(conn.recv(1024), 'utf-8'))
+        print(FOLLOW)
         conn.send(b"Data received")
         conn.close()
-"""
+
 def main():
+    print(FOLLOW)
     auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
     auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 
@@ -82,11 +84,15 @@ def main():
     stream.filter(follow=FOLLOW)
 
 if __name__ == '__main__':
-    #server_thread = threading.Thread(target=server)
-    #try:
-    main()
-    #except e:
-    #    server_thread.join()
-     #   print("Exeception {} occured, server stopped".format(e))
-     #   sys.exit()
+    try:
+        main_thread = threading.Thread(target=main)
+        server_thread = threading.Thread(target=server)
+
+        server_thread.start()
+        main_thread.start()
+    except e:
+        main_thread.join()
+        server_thread.join()
+        print("Exeception {} occured, server stopped".format(e))
+        sys.exit()
 
