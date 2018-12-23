@@ -67,10 +67,10 @@ def save_to_filesystem(user_id):
         with open(file_location, 'a') as File:
             File.write(user_id + "\n")
 
-        return False
+        return True
 
     else:
-        return True
+        return False
 
 def server():
     print("Server started")
