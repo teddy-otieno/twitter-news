@@ -4,11 +4,14 @@ import json
 import socket
 import threading
 import sys
+import re
 from credentials import *
 
 #TODO: Filters
 #FEATURE: server client protocol, to add and remove user id's in real time
 #Add userIDs of the accounts you want to get news from
+
+FILE_LOCATION = "/home/teddy/Projects/Python/twitter-news/user_ids_store"
 FOLLOW = [
         "56510427", #motherboard
         "333430027", #manjarolinux
@@ -53,18 +56,17 @@ def parse(json_string):
         message = Message(out=False) 
     return message
 
-def save_to_filesystem(user_id):
-    file_location = "/home/teddy/Projects/Python/twitter-news/user_ids_store"
+def save_user_to_storage(user_id):
 
     temporary_user_ids = []
 
-    with open(file_location, 'r') as File:
+    with open(FILE_LOCATION, 'r') as File:
         file_output = File.read()
         for user_id in file_output.split('\n'):
             temporary_user_ids.append(user_id)
 
     if user_id not in temporary_user_ids:
-        with open(file_location, 'a') as File:
+        with open(FILE_LOCATION, 'a') as File:
             File.write(user_id + "\n")
 
         return True
@@ -72,29 +74,61 @@ def save_to_filesystem(user_id):
     else:
         return False
 
+def remove_user_from_storage(user_id):
+    temporary_user_ids = []
+
+    with open(FILE_LOCATION, 'r') as File:
+        for user in File.read().split("\n"):
+            if user != user_id:
+                temporary_user_ids.append(user)
+    
+    with open(FILE_LOCATION, 'w') as File:
+        for user in temporary_user_ids:
+            File.write(user + '\n')
+
 def server():
     print("Server started")
     host = 'localhost'
     port = 9090
-    
+   
     #change to unix-sockets
     connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     connection.bind((host, port))
-
     connection.listen(10)
+    
     while True:
-        conn, address = connection.accept()
-        print("Connection received")
 
-        user_id = str(conn.recv(1024), 'utf-8')
-        if user_id not in FOLLOW and save_to_filesystem(user_id):
-            FOLLOW.append(user_id)
-            conn.send(b"User ID updated succesfully")
+        args = []
+        while True:
+            conn, address = connection.accept()
+            print("Connection received")
+            user_id = str(conn.recv(1024), 'utf-8')
+            print(user_id) 
+            if user_id and user_id != 'EOF':
+                args.append(user_id)
+            else:
+                conn.close()
+                break
+            conn.close()
+
+        if re.match(r'[a-z]', args[0].replace("-", "")):
+            command = args[0]
+        
         else:
-            conn.send(b"User ID already present, update failed")
-        conn.close()
+            raise Exception("No user ID present")
 
-def main():
+        if command == "-a":
+            for user_id in args[2:]:
+                if user_id not in FOLLOW and save_user_to_storage(user_id):
+                    FOLLOW.append(args)
+
+        elif command == "-r":
+            for user_id in args[2:]:
+                if user_id in FOLLOW:
+                    remove_user_from_storage(user_id)
+                    FOLLOW.remove(user_id)
+
+def streamer():
     print(FOLLOW)
     auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
     auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
@@ -103,11 +137,10 @@ def main():
     stream = tweepy.Stream(auth = api.auth, listener=Listener())
 
     print("streaming")
-    stream.filter(follow=FOLLOW)
 
-if __name__ == '__main__':
+def main():
     try:
-        main_thread = threading.Thread(target=main)
+        main_thread = threading.Thread(target=streamer)
         server_thread = threading.Thread(target=server)
 
         server_thread.start()
@@ -118,3 +151,5 @@ if __name__ == '__main__':
         print("Exeception {} occured, server stopped".format(e))
         sys.exit()
 
+if __name__ == '__main__':
+    main()
